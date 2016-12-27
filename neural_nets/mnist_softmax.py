@@ -16,6 +16,13 @@
 """A very simple MNIST classifier.
 See extensive documentation at
 http://tensorflow.org/tutorials/mnist/beginners/index.md
+
+Original code here:
+ https://github.com/tensorflow/tensorflow/blob/master/tensorflow/examples/tutorials/mnist/mnist_softmax.py
+ Relevant tensorflow tutorials here:
+ https://www.tensorflow.org/tutorials/mnist/beginners/
+ https://www.tensorflow.org/tutorials/mnist/pros/s
+
 """
 from __future__ import absolute_import
 from __future__ import division
