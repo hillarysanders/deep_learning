@@ -1,6 +1,11 @@
 import matplotlib.pyplot as plt
 from skimage import measure, morphology
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+import numpy as np  # linear algebra
+import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
+import os
+import config, utils
+
 
 # todo create or find a plot save wrapper / decorator?
 
@@ -53,9 +58,64 @@ def plot_ct_slice(patient_pixels, slice_idx=80, save_path=None, cancer_status=''
     plt.imshow(patient_pixels[slice_idx], cmap=plt.cm.gray)
     plt.title("CT Slice ({})\nCancer Status: {}".format(slice_idx, cancer_status))
     if save_path is not None:
-        plt.savefig(save_path.format(slice_idx))
+        plt.savefig(save_path)
         plt.close()
     else:
         plt.show()
 
 
+def main():
+    labels = pd.read_csv(config.input_data_dir + config.file_stage1_labels, index_col='id')
+    patients = os.listdir(config.input_images_dir)
+    patients.sort()
+    utils.safe_mkdirs(config.processed_images_dir)
+    utils.safe_mkdirs(config.plots_dir)
+    for pat in patients:
+        if pat != '.DS_Store':
+
+            cancer_status = utils.get_patient_cancer_status(patient_id=pat, labels=labels)
+
+            patient_proc_data_dir = config.processed_images_dir + pat + '/'
+            # load objects
+            # scan = np.load(file=patient_proc_data_dir + config.file_scan)
+            pixels = np.load(file=patient_proc_data_dir + config.file_pixels_resampled)
+            # pix_resampled = np.load(file=patient_proc_data_dir + config.file_pixels_resampled)
+            # spacing = np.load(file=patient_proc_data_dir + config.file_pixels_resampled_spacing)
+            segmented_lungs = np.load(file=patient_proc_data_dir + config.file_segmented_lungs)
+            segmented_lungs_fill = np.load(file=patient_proc_data_dir + config.file_segmented_lungs_fill)
+
+            # now make some initial plots:
+            # first make folder to store patient plots:
+            plot_file = config.plots_dir + '{}' + cancer_status + '_' + pat + '.jpeg'
+
+            dir = 'housefield_unit_histograms/'
+            utils.safe_mkdirs(config.plots_dir + dir)
+            plot_housefield_units_hist(patient_pixels=pixels,
+                                       save_path=plot_file.format(dir),
+                                       cancer_status=cancer_status)
+
+            for slice in range(0, len(pixels), 30):
+                dir = 'ct_slices_{}/'.format(slice)
+                utils.safe_mkdirs(config.plots_dir + dir)
+                if slice < len(pixels):
+                    plot_ct_slice(patient_pixels=pixels,
+                                  slice_idx=slice,
+                                  save_path=plot_file.format(dir),
+                                  cancer_status=cancer_status)
+
+            dir = 'segmented_lungs/'
+            utils.safe_mkdirs(config.plots_dir + dir)
+            plot_3d(segmented_lungs_fill - segmented_lungs, 0,
+                    save_path=plot_file.format(dir),
+                    cancer_status=cancer_status)
+
+            dir = 'segmented_lungs_filled/'
+            utils.safe_mkdirs(config.plots_dir + dir)
+            plot_3d(segmented_lungs_fill, 0,
+                    save_path=plot_file.format(dir),
+                    cancer_status=cancer_status)
+
+
+if __name__ == '__main__':
+    # NOTE: must be run after preprocessing.py has been run at least once!
+    main()

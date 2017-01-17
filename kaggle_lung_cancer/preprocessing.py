@@ -161,8 +161,7 @@ def zero_center(image, pixel_mean=.25):
     return image
 
 
-##############
-if __name__ == '__main__':
+def main():
     # load, pre-process, and save the CT scans, although do zero centering and normalizing later <3
     labels = pd.read_csv(config.input_data_dir + config.file_stage1_labels, index_col='id')
     patients = os.listdir(config.input_images_dir)
@@ -172,8 +171,6 @@ if __name__ == '__main__':
         if pat != '.DS_Store':
 
             print('Patient: {}'.format(pat))
-
-            cancer_status = ['benign', 'cancerous'][labels.cancer[pat]]
             scan = load_scan(config.input_images_dir + pat)
             patient_pixels = get_pixels_hu(scan)
 
@@ -184,31 +181,18 @@ if __name__ == '__main__':
             print("\tShape before resampling: {}".format(patient_pixels.shape))
             print("\tShape after resampling: {}".format(pix_resampled.shape))
 
-            # now make some initial plots:
-            # first make folder to store patient plots:
-            utils.safe_mkdirs(config.plots_dir + pat)
-            patient_plots_dir = config.plots_dir + pat + '/'
-
-            plots.plot_housefield_units_hist(patient_pixels=patient_pixels,
-                                             save_path=patient_plots_dir + 'housefield_unit_histogram.jpeg',
-                                             cancer_status=cancer_status)
-
-            for slice in range(0, len(patient_pixels), 30):
-                if slice < len(patient_pixels):
-                    plots.plot_ct_slice(patient_pixels=patient_pixels,
-                                        slice_idx=slice,
-                                        save_path=patient_plots_dir + 'ct_slice_{}.jpeg',
-                                        cancer_status=cancer_status)
-
-            plots.plot_3d(segmented_lungs_fill - segmented_lungs, 0,
-                          save_path=patient_plots_dir + 'segmented_lungs.jpeg',
-                          cancer_status=cancer_status)
-
             # save the processed data:
             patient_proc_data_dir = config.processed_images_dir + pat + '/'
             utils.safe_mkdirs(patient_proc_data_dir)
             # save stuff:
+            np.save(file=patient_proc_data_dir + config.file_scan, arr=scan)
+            np.save(file=patient_proc_data_dir + config.file_pixels, arr=patient_pixels)
             np.save(file=patient_proc_data_dir + config.file_pixels_resampled, arr=pix_resampled)
             np.save(file=patient_proc_data_dir + config.file_pixels_resampled_spacing, arr=spacing)
             np.save(file=patient_proc_data_dir + config.file_segmented_lungs, arr=segmented_lungs)
             np.save(file=patient_proc_data_dir + config.file_segmented_lungs_fill, arr=segmented_lungs_fill)
+
+
+##############
+if __name__ == '__main__':
+    main()

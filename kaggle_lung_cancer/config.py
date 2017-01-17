@@ -12,6 +12,8 @@ plots_dir = 'plots/'
 # input file names:
 file_stage1_labels = 'stage1_labels.csv'
 # file names:
+file_scan = 'scan'
+file_pixels = 'pixels'
 file_pixels_resampled = 'pixels_resampled'
 file_pixels_resampled_spacing = 'pixels_resampled_spacing'
 file_segmented_lungs = 'segmented_lungs'
