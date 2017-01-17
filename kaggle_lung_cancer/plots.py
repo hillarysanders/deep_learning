@@ -74,15 +74,19 @@ def main():
         if pat != '.DS_Store':
 
             cancer_status = utils.get_patient_cancer_status(patient_id=pat, labels=labels)
-
             patient_proc_data_dir = config.processed_images_dir + pat + '/'
+
+            print('Creating plots for patient {}:'.format(pat))
+            print('\tSaving plots to {}'.format(patient_proc_data_dir))
+            print('\tCancer status: {}'.format(cancer_status))
             # load objects
-            # scan = np.load(file=patient_proc_data_dir + config.file_scan)
-            pixels = np.load(file=patient_proc_data_dir + config.file_pixels_resampled)
-            # pix_resampled = np.load(file=patient_proc_data_dir + config.file_pixels_resampled)
-            # spacing = np.load(file=patient_proc_data_dir + config.file_pixels_resampled_spacing)
-            segmented_lungs = np.load(file=patient_proc_data_dir + config.file_segmented_lungs)
-            segmented_lungs_fill = np.load(file=patient_proc_data_dir + config.file_segmented_lungs_fill)
+            patient_data_file = patient_proc_data_dir + '{}.npy'
+            # scan = np.load(file=patient_proc_data_dir.format(config.file_scan))
+            pixels = np.load(file=patient_proc_data_dir.format(config.file_pixels_resampled))
+            # pix_resampled = np.load(file=patient_proc_data_dir.format(config.file_pixels_resampled))
+            # spacing = np.load(file=patient_proc_data_dir.format(config.file_pixels_resampled_spacing))
+            segmented_lungs = np.load(file=patient_proc_data_dir.format(config.file_segmented_lungs))
+            segmented_lungs_fill = np.load(file=patient_proc_data_dir.format(config.file_segmented_lungs_fill))
 
             # now make some initial plots:
             # first make folder to store patient plots:
