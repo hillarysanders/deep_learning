@@ -3,10 +3,9 @@ import pandas as pd  # data processing, CSV file I/O (e.g. pd.read_csv)
 import dicom
 import os
 import scipy.ndimage
-import matplotlib.pyplot as plt
 from skimage import measure, morphology
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-import config, utils, plots
+import config, utils
 
 """
 Note: much of the code in this file is based off of the awesome Guido's Zuidhof's pre-processing tutorial
@@ -140,7 +139,7 @@ def segment_lung_mask(image, fill_lung_structures=True):
     binary_image -= 1  # Make the image actual binary
     binary_image = 1 - binary_image  # Invert it, lungs are now 1
 
-    # Remove other air pockets insided body
+    # Remove other air pockets inside body
     labels = measure.label(binary_image, background=0)
     l_max = largest_label_volume(labels, bg=0)
     if l_max is not None:  # There are air pockets
@@ -167,10 +166,11 @@ def main():
     patients = os.listdir(config.input_images_dir)
     patients.sort()
     utils.safe_mkdirs(config.processed_images_dir)
-    for pat in patients:
-        if pat != '.DS_Store':
+    for p in range(len(patients)):
+        pat = patients[p]
+        if pat != '.DS_Store' and p >= 1088:
 
-            print('Patient: {}'.format(pat))
+            print('Patient {}/{}: {}'.format(p+1, len(patients), pat))
             scan = load_scan(config.input_images_dir + pat)
             patient_pixels = get_pixels_hu(scan)
 
@@ -185,14 +185,17 @@ def main():
             patient_proc_data_dir = config.processed_images_dir + pat + '/'
             utils.safe_mkdirs(patient_proc_data_dir)
             # save stuff:
-            np.save(file=patient_proc_data_dir + config.file_scan, arr=scan)
-            np.save(file=patient_proc_data_dir + config.file_pixels, arr=patient_pixels)
+            # np.save(file=patient_proc_data_dir + config.file_scan, arr=scan)
+            # np.save(file=patient_proc_data_dir + config.file_pixels, arr=patient_pixels)
             np.save(file=patient_proc_data_dir + config.file_pixels_resampled, arr=pix_resampled)
             np.save(file=patient_proc_data_dir + config.file_pixels_resampled_spacing, arr=spacing)
             np.save(file=patient_proc_data_dir + config.file_segmented_lungs, arr=segmented_lungs)
             np.save(file=patient_proc_data_dir + config.file_segmented_lungs_fill, arr=segmented_lungs_fill)
 
 
+# 4 dimensional convolutional neural network
+
 ##############
 if __name__ == '__main__':
+    # about two thirds done, Patient 1088/1596: ad7e6fe9d036ed070df718f95b212a10
     main()
