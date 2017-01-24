@@ -83,7 +83,7 @@ def plot_ct_slice(patient_pixels, slice_idx=80, save_path=None, cancer_status=''
         p = plt.imshow(slice, cmap=plt.cm.gray)
 
     hus = config.housefield_unit_buckets
-    colors = [mpatches.Patch(color=hus.color[l], label='{} ({})'.format(l, hus.average_value[l])) for l in hus]
+    colors = [mpatches.Patch(color=hus.color[l], label='{} ({})'.format(l, hus.average_value[l])) for l in hus.index]
     plt.legend(handles=colors)
     plt.title("CT Slice ({})\nCancer Status: {}".format(slice_idx, cancer_status))
     if save_path is not None:
@@ -143,13 +143,18 @@ def main():
 
             dir = 'ct_scan_gif/'
             utils.safe_mkdirs(config.plots_dir + dir)
-            animate_ct_scan(pixels, gifname=plot_file.format(dir).replace('.jpeg', '.gif'))
+            filepath = plot_file.format(dir).replace('.jpeg', '.gif')
+            print('\t\tplotting: '+filepath)
+            animate_ct_scan(pixels, gifname=filepath)
+
 
             dir = 'housefield_unit_histograms/'
             utils.safe_mkdirs(config.plots_dir + dir)
+            print('\t\tplotting: '+plot_file.format(dir))
             plot_housefield_units_hist(patient_pixels=pixels,
                                        save_path=plot_file.format(dir),
                                        cancer_status=cancer_status)
+
 
             for slice in range(0, len(pixels), 30):
                 for color in [True, False]:
@@ -157,6 +162,7 @@ def main():
                     dir = 'ct_slices_{}_{}/'.format(colored, slice)
                     utils.safe_mkdirs(config.plots_dir + dir)
                     if slice < len(pixels):
+                        print('\t\tplotting: '+plot_file.format(dir))
                         plot_ct_slice(patient_pixels=pixels,
                                       slice_idx=slice,
                                       save_path=plot_file.format(dir),
